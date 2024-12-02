@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiceNow Excel Demo | Display Excel Data in HTML Table using JavaScript</title>
+    <link rel="stylesheet" href="ExcelParser.css">
+
+</head>
+
+<body>
+
+    <!-- Excel file upload and download buttons -->
+    <div id="excelActionBtns">
+        <h3 id="selectExcelText">Select Excel File:</h3>
+        <input id="inputFileBtn" type="file">
+        <button id="downloadBtn" style="display: block;">Download as Excel</button>
+        <button id="auditBtn" style="display: block;">Download Audit Report</button>
+    </div>
+
+    <!-- Table Container where the rendered table will appear -->
+    <div id="excel-table-container"></div>
+
+    <!-- Audit Modal Template -->
+    <div id="auditModal" class="audit-modal">
+        <div class="audit-modal-content">
+            <span class="close" onclick="closeAuditModal()">&times;</span>
+            <h3>Audit Report</h3>
+            <div id="auditContent"></div>
+        </div>
+    </div>
+
+    <!-- Error Modal Template -->
+    <div id="errorModal" class="error-modal">
+        <div class="error-modal-content">
+            <span class="close" onclick="closeErrorModal()">&times;</span>
+            <h3>Error Report</h3>
+            <div id="errorContent"></div>
+        </div>
+    </div>
+
+    <!-- Edit Form Modal Template -->
+    <div id="editFormModal" class="editForm-modal">
+        <div class="editForm-modal-content">
+            <span class="close" onclick="closeEditFormModal()">&times;</span>
+            <h3>Edit Record</h3>
+            <div id="editFormContent"></div>
+            <div class="editFormActionBtn">
+                <button id="saveFormBtn" class="saveFormBtn">Save Changes</button>
+                <button id="cancelEditFormBtn" class="cancelEditFormBtn" onclick="closeEditFormModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Excel Parser -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <!-- Global Variables -->
+    <script src="ConfigData.js"></script>
+    <script src="StateZipData.js"></script>
+    <script src="ErrorMessages.js"></script>
+
+    <!-- Validation and Render functions -->
+    <script src="Utils.js"></script>
+    <script src="ZipValidation.js"></script>
+    <script src="Validation.js"></script>
+    <script src="EditRow.js"></script>
+    <script src="Render.js"></script>
+    <script src="Audit.js"></script>
+
+    <script>
+
+        const inputFileBtn = document.getElementById('inputFileBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const auditBtn = document.getElementById('auditBtn');
+        let records = [];
+        let originalRecords = []
+        let RecordsValidationResults = [];
+        let selectedRows = new Map()
+        // Variable to track the focused search input
+        let focusedSearchId = null;
+
+        inputFileBtn.addEventListener('change', function (e) {
+
+            const file = e.target.files[0];
+            const fileName = file.name;
+
+            // Extract the extension from the file name by looking for the last dot
+            const fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+
+            // Check if the file is an Excel file
+            if (fileExtension !== 'xlsx' && fileExtension !== 'xls') {
+                alert('Please upload a valid Excel file (.xlsx or .xls)');
+                inputFileBtn.value = '';  // Clear the input so the user can re-upload the correct file
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(file); // Read the file as an array buffer
+
+            reader.onload = function (event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Assuming there is only one sheet in the workbook
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+
+                // Convert the sheet to JSON format
+                records = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // Find the indices of the date fields from the header row (record[0])
+                const dateFieldIndices = dateFieldNames.map(fieldName => records[0].indexOf(fieldName));
+
+                // Iterate over the records (starting from the second row) and convert date fields in place
+                for (let rowIndex = 1; rowIndex < records.length; rowIndex++) {
+                    const row = records[rowIndex];
+
+                    // Convert each date field in the row
+                    dateFieldIndices.forEach(index => {
+                        if (row[index]) {
+                            row[index] = convertToYYYYMMDD(row[index]); // In-place modification
+                        }
+                    });
+                }
+
+                const recordsObject = validateExcel(records, inputFileBtn); // Go to Validation.js
+                // clone the records 
+                originalRecords = JSON.parse(JSON.stringify(recordsObject));
+
+                if (recordsObject) {
+                    RecordsValidationResults = validateRecords(recordsObject);
+                } else {
+                    inputFileBtn.value = '';  // Clear the input so the user can re-upload the correct file
+                    return;
+                }
+
+                if (RecordsValidationResults) {
+                    // Insert the table structure into the DOM
+                    document.getElementById('excel-table-container').innerHTML = tableHeader;
+
+                    // Render each record one by one
+                    RecordsValidationResults.forEach(element => {
+                        renderRecord(element); // Go to Render.js
+                    });
+                }
+            };
+        });
+
+        // Event Delegation on excel-table-container to identify & handle Action Buttons
+        document.getElementById('excel-table-container').addEventListener('click', function (event) {
+            const target = event.target;
+
+            // Return early if the clicked element is not button
+            if (!target.classList.contains('editBtn') &&
+                !target.classList.contains('saveBtn') &&
+                !target.classList.contains('editFormBtn') &&
+                !target.classList.contains('submitBtn') &&
+                !target.classList.contains('infoIcon') &&
+                !target.classList.contains('auditBtn')
+            ) {
+                return;
+            }
+
+            // Extract the recordId
+            const recordId = Number(target.id.split('-')[1]);
+
+            // Check if the Edit button was clicked
+            if (target.classList.contains('infoIcon')) {
+                const record = RecordsValidationResults.find(r => r.record.id === recordId);
+                showError(record.ErrorCodes); // Function is in Render.js
+            }
+
+            // Check if the Audit button was clicked
+            if (target.classList.contains('auditBtn')) {
+                showAudit(recordId); // Function is in Render.js
+            }
+
+            // Check if the Edit button was clicked
+            if (target.classList.contains('editBtn')) {
+                const record = RecordsValidationResults.find(r => r.record.id === recordId);
+
+                selectedRows = new Map();
+                editRow(recordId, record.record); // Go to EditRow.js
+
+                // Hide Edit button and show Save button
+                target.style.display = 'none';
+                document.getElementById(`saveBtn-${recordId}`).style.display = 'inline-block';
+            }
+
+            // Check if the Edit in Form button was clicked
+            if (target.classList.contains('editFormBtn')) {
+                const record = RecordsValidationResults.find(r => r.record.id === recordId);
+                showEditForm(recordId, record.record, record.ErrorCodes, RecordsValidationResults); // Go to Render.js
+            }
+
+            // Check if the Save button was clicked
+            if (target.classList.contains('saveBtn')) {
+                saveRow(recordId, RecordsValidationResults); // Go to Render.js
+            }
+
+            // Check if the Submit button was clicked
+            if (target.classList.contains('submitBtn')) {
+                console.log('Submit Button Clicked');
+            }
+        });
+
+
+        // Download Updated Records in Excel File
+        downloadBtn.addEventListener('click', function () {
+            if (RecordsValidationResults.length === 0) {
+                alert('No records to download!');
+                return;
+            }
+
+            // Check if any Save buttons are currently visible
+            const saveButtons = Array.from(document.querySelectorAll('.saveBtn')); // Get all Save buttons
+            const unsavedChanges = saveButtons.some(btn => btn.style.display === 'inline-block'); // Check if any are displayed
+
+            if (unsavedChanges) {
+                alert('Please save all records before downloading the excel file');
+                return;
+            }
+
+            // Prepare data excluding the 'id' field
+            const headers = Object.keys(RecordsValidationResults[0].record).filter(header => header !== 'id');
+
+            // Create a new workbook and add a worksheet
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("Records");
+
+            // Add headers to the worksheet with bold styling
+            worksheet.addRow(headers).eachCell(cell => {
+                cell.font = { bold: true };
+            });
+
+            // Add the data rows, excluding the 'id' field
+            RecordsValidationResults.forEach(result => {
+                const row = headers.map(header => result.record[header] || ''); // Ensure empty strings for missing values
+                worksheet.addRow(row);
+            });
+
+            // Trigger the download as an Excel file
+            workbook.xlsx.writeBuffer().then(buffer => {
+                const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "Modified_Excel_Record.xlsx";
+                a.click();
+                window.URL.revokeObjectURL(url);
+            });
+        });
+
+
+        // Download Audit Report
+        auditBtn.addEventListener('click', function () {
+            if (RecordsValidationResults.length === 0) {
+                alert('No records to download!');
+                return;
+            }
+
+            // Check if any Save buttons are currently visible
+            const saveButtons = Array.from(document.querySelectorAll('.saveBtn')); // Get all Save buttons
+            const unsavedChanges = saveButtons.some(btn => btn.style.display === 'inline-block'); // Check if any are displayed
+
+            if (unsavedChanges) {
+                alert('Please save all records before downloading the audit report');
+                return;
+            }
+
+            generateAuditReport(originalRecords, RecordsValidationResults)
+        });
+
+    </script>
+</body>
+
+</html>

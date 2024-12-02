@@ -1,0 +1,768 @@
+* {
+    box-sizing: border-box;
+    /* Ensures padding and borders are included in width and height */
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    overflow: hidden;
+}
+
+#selectExcelText {
+    font-size: medium;
+}
+
+/* Excel Action Buttons */
+#excelActionBtns {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+#inputFileBtn {
+    width: 250px;
+    height: 50px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#inputFileBtn:hover {
+    background-color: #e0e0e0;
+}
+
+#excelActionBtns button {
+    width: 170px;
+    height: 50px;
+    padding: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#downloadBtn {
+    background-color: #2196F3;
+}
+
+#downloadBtn:hover {
+    background-color: #1976D2;
+}
+
+#auditBtn {
+    background-color: #FF9800;
+}
+
+#auditBtn:hover {
+    background-color: #F57C00;
+}
+
+
+/* Excel Table Styles */
+#excel-table-container {
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: auto;
+    margin: 20px 0px;
+}
+
+.excelTable {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #4a4a4a;
+    border: 1px solid black;;
+}
+
+.excelHeader,
+.excelData {
+    width: 200px;
+    padding: 15px;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid gray;
+}
+
+.excelHeader {
+    text-align: left;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #e9ecef;
+    color: #000;
+    border-bottom: 1px solid black;
+}
+
+.excelData {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.excelTable .excelHeader:first-child,
+.excelTable .excelData:first-child {
+    width: 80px;
+    padding: 15px;
+    text-align: center;
+    vertical-align: middle;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+}
+
+.excelTable .excelData:first-child {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    position: relative;
+    background-color: rgba(255, 255, 255, 1);
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.excelTable tr:nth-child(even) .excelData:first-child {
+    background-color: #f2f2f2;
+}
+
+.infoIcon {
+    position: absolute;
+    right: 10px;
+    top: 46%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: red;
+    font-size: 1.1em;
+    font-style: normal;
+}
+
+.excelTable .excelHeader:last-child,
+.excelTable .excelData:last-child {
+    width: 365px;
+    padding: 5px;
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    vertical-align: middle;
+    position: sticky;
+    right: 0;
+}
+
+.excelTable .excelData:last-child {
+    padding: 0px;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.excelTable tr:nth-child(even) .excelData:last-child {
+    background-color: #f2f2f2;
+}
+
+.excelTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+
+/* Row Action Buttons */
+.editBtn,
+.editFormBtn,
+.saveBtn,
+.submitBtn,
+.auditBtn {
+    font-size: small;
+    width: 60px;
+    height: 30px;
+    padding: 0;
+    margin-left: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.editBtn {
+    background-color: #e6b800;
+    margin-left: 10px;
+
+}
+
+.editBtn:hover {
+    background-color: #d4a017;
+}
+
+.editFormBtn {
+    background-color: #ffa500;
+    width: 100px;
+}
+
+.editFormBtn:hover {
+    background-color: #e69500;
+}
+
+.saveBtn {
+    background-color: #00b5fe;
+    margin-left: 10px;
+}
+
+.saveBtn:hover {
+    background-color: #00a3e0;
+}
+
+.submitBtn {
+    background-color: #4CAF50;
+}
+
+.submitBtn:hover {
+    background-color: #45a049;
+}
+
+.auditBtn {
+    background-color: #808080;
+    width: 100px;
+}
+
+.auditBtn:hover {
+    background-color: #666666;
+}
+
+.editBtn:hover,
+.editFormBtn:hover,
+.saveBtn:hover,
+.submitBtn:hover,
+.auditBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Input Type CSS */
+.custom-textarea {
+    width: 100%;
+    height: 60px;
+    line-height: 15px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Add styles */
+.custom-input,
+.custom-dropdown,
+.custom-multiselect-dropdown,
+.custom-date-picker {
+    width: 100%;
+    height: 30px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Add a focus effect */
+.custom-input:focus,
+.custom-textarea:focus,
+.custom-dropdown:focus,
+.custom-multiselect-dropdown:focus,
+.custom-date-picker:focus {
+    border-color: #3366cc;
+    background-color: #fff;
+    outline: none;
+}
+
+/* Add a hover effect */
+.custom-input:hover,
+.custom-textarea:hover,
+.custom-dropdown:hover,
+.custom-multiselect-dropdown:hover,
+.custom-date-picker:hover {
+    border-color: #b5b5b5;
+}
+
+
+/* Zip Modal CSS */
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    width: 80%;
+}
+
+.table-container1 {
+    max-height: 500px;
+    /* Adjust height as needed */
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    /* Optional border for visual separation */
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .table-container1 {
+        max-height: 300px;
+        /* Adjust height as needed */
+        overflow-y: auto;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        /* Optional border for visual separation */
+    }
+
+    table {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    th,
+    td {
+        padding: 10px 12px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    td input {
+        padding: 6px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 1% auto;
+        padding: 1%;
+        width: 90%;
+    }
+}
+
+@media (max-width: 1300px) {
+    .table-container1 {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 1% auto;
+        padding: 20px;
+        width: 90%;
+    }
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 5;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+
+
+/* General table styling */
+/* Specific styling for the first table */
+.table1 {
+    background-color: #f0f8ff;
+    overflow: 'scroll';
+    /* Light blue */
+}
+
+.table1 th {
+    background-color: #00ccff;
+    min-width: 100px;
+    position: sticky;
+    /* Makes the <th> sticky */
+    top: 0;
+    z-index: 1;
+}
+
+.table1 td {
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.table1 tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Styling for checkboxes */
+
+input[type="checkbox"] {
+    transform: scale(1.5);
+    /* Scale the checkbox */
+    outline: none;
+    /* Remove the outline (blue highlight in some browsers) */
+    box-shadow: none;
+    /* Remove the focus box-shadow (default highlight) */
+}
+
+input[type="checkbox"]:focus {
+    outline: none;
+    /* Ensure outline is removed when focused */
+    box-shadow: none;
+    /* Ensure no shadow appears on focus */
+}
+
+/* Filter dropdown */
+select {
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+
+.table1 {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table1 th,
+.table1 td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+/* Fix the header to be sticky */
+.table1 thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f9f9f9;
+    /* You can customize the header background */
+    z-index: 1;
+}
+
+.header-container {
+    display: flex;
+    /* Flexbox layout */
+    justify-content: space-between;
+    /* Space out items: header to left, close button to right */
+    align-items: center;
+    /* Vertically center the items */
+    padding: 10px;
+    /* Optional padding */
+}
+
+.search-container {
+    display: flex;
+    /* Flexbox layout */
+    justify-content: space-between;
+    align-items: center;
+    /* Vertically center the items 
+*/
+    padding: 10px;
+    /* Optional padding */
+}
+
+#closeBtn {
+    cursor: pointer;
+    /* Make the close button look clickable */
+    font-size: 24px;
+    /* Adjust size of the close button */
+    color: black;
+    /* Set close button color */
+}
+
+h4 {
+    margin: 0;
+    /* Remove default margin for better alignment */
+}
+
+
+button {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: #2196F3;
+}
+
+
+/* Audit Modal styling */
+.audit-modal {
+    display: none;
+    position: fixed;
+    z-index: 4;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.audit-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 80%;
+}
+
+#auditContent {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.highlight-change {
+    background-color: #ffeb3bc0 !important;
+}
+
+.auditTable {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #4a4a4a;
+    border: 1px solid black;
+}
+
+.auditHeader,
+.auditData {
+    padding: 8px;
+}
+
+.auditHeader {
+    text-align: left;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #e9ecef;
+    color: #000;
+    border: 1px solid black;
+}
+
+.auditData {
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+    vertical-align: top;
+    border: 1px solid gray;
+}
+
+.auditTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+
+/* Error Modal styling */
+.error-modal {
+    display: none;
+    position: fixed;
+    z-index: 4;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.error-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    max-width: 50%;
+}
+
+#errorContent {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.errorTable {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #4a4a4a;
+    border: 1px solid black;
+}
+
+.errorHeader,
+.errorData {
+    text-align: left;
+    padding: 10px;
+}
+
+.errorHeader {
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #e9ecef;
+    color: #000;
+    border: 1px solid black;
+}
+
+.errorData {
+    border: 1px solid grey;
+}
+
+.errorTable .errorHeader:first-child,
+.errorTable .errorData:first-child {
+    width: 200px;
+}
+
+.errorTable .errorHeader:last-child,
+.errorTable .errorData:last-child {
+    width: 300px;
+}
+
+.errorTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+
+/* Edit Form Modal styles */
+.editForm-modal {
+    display: none;
+    position: fixed;
+    z-index: 4;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.editForm-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    max-width: 50%;
+}
+
+#editFormContent{
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.editFormTable {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #4a4a4a;
+    border: 1px solid black;
+}
+
+.editFormHeader,
+.editFormData {
+    text-align: left;
+    padding: 10px;
+}
+
+.editFormHeader {
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #e9ecef;
+    color: #000;
+    border: 1px solid black;
+}
+
+.editFormData {
+    border: 1px solid grey;
+}
+
+.editFormTable .editFormHeader:first-child,
+.editFormTable .editFormData:first-child {
+    width: 200px;
+}
+
+.editFormTable .editFormHeader:last-child,
+.editFormTable .editFormData:last-child {
+    width: 300px;
+}
+
+.editFormTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.editFormActionBtn {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 15px;
+}
+
+.saveFormBtn,
+.cancelEditFormBtn
+ {
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.saveFormBtn {
+    background-color: #00b5fe;
+}
+
+.saveFormBtn:hover {
+    background-color: #00a3e0;
+}
+
+.cancelEditFormBtn {
+    background-color: #f44336;
+}
+
+.cancelEditFormBtn:hover {
+    background-color: #d32f2f;
+}
+
+.saveFormBtn:hover,
+.cancelEditFormBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
